@@ -1,34 +1,51 @@
 # 🚚 Supply Chain Late Delivery Risk Predictor
 
-> **Capstone Project** — Francis Amojelar | Calgary, AB
+> **Capstone Project** — Francis Amojelar | BuiltSmart AI Cohort, September 2026
 
-A machine learning–powered web application that predicts whether a supply chain order will be delivered **late** based on order attributes such as shipping mode, product category, customer segment, discount rate, and geographic region.
+An AI-powered classifier that predicts whether a shipment will be delayed — enabling procurement teams to act before disruptions stall critical infrastructure projects.
+
+🌐 **Live Project Website:** [https://www.vouchya.com/capstone](https://www.vouchya.com/capstone)  
+🤖 **JotForm AI Agent:** [https://agent.jotform.com/01a068014d98700080c8c7a4ca4e868f860c](https://agent.jotform.com/01a068014d98700080c8c7a4ca4e868f860c)
 
 ---
 
 ## 🎯 Problem Statement
 
-Late deliveries are one of the most costly and customer-damaging events in supply chain operations. This project builds a **binary classification model** to flag high-risk orders before they ship, enabling proactive interventions.
+Late deliveries are one of the most costly and customer-damaging events in supply chain operations. This project builds a **binary classification model** to flag high-risk shipments before they depart, enabling proactive interventions by procurement teams and site managers.
 
 - **Target variable:** `Late_delivery_risk` (0 = On-time, 1 = Late)
-- **Dataset:** [DataCo Smart Supply Chain for Big Data Analysis](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis)
-- **Model:** Random Forest Classifier (via MindsDB / Supervised ML)
+- **Dataset:** [DataCo Smart Supply Chain](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis) — 177,519 records, 29 columns
+- **Platform:** [BrainToy MLOS](https://braintoy.ai)
+- **Model:** DecisionTreeClassifier v.3 — **81.93% accuracy, 0.82 ROC AUC**
 
 ---
 
-## 📂 Project Structure
+## 🧠 Model Development
 
-```
-supply-chain-delay-predictor/
-├── README.md                    # Project overview (this file)
-├── predictor-app.html           # Interactive web predictor UI
-├── notebook/
-│   └── supply_chain_eda.ipynb   # EDA + model training notebook
-├── data/
-│   └── .gitkeep                 # Place DataCoSupplyChainDataset.csv here
-└── assets/
-    └── screenshots/             # UI screenshots
-```
+### Data Preparation
+- Uploaded DataCoSupplyChain CSV (177,519 records, 29 columns) into BrainToy MLOS
+- Locked `Late_delivery_risk` as the binary target variable with an 80/20 train/validation split
+- Applied Categorical-to-Numeric transformation to 11 high-cardinality features including `Type`, `Category_Name`, `Shipping_Mode`, `Market`, and `Customer_Segment`
+
+### Model Selection
+
+| Model | Accuracy | ROC AUC | Hamming Loss |
+|---|---|---|---|
+| **DecisionTreeClassifier v.3** ✅ | **81.93%** | **0.82** | **0.18** |
+| ExtraTreesClassifier v.1 | Lower | — | 0.24 |
+
+DecisionTreeClassifier v.3 selected as the deployment candidate — outperforming ExtraTreesClassifier on accuracy and Hamming Loss.
+
+### Governance
+Model container submitted to **fariha@braintoy.ai** for third-party ethical validation per BuiltSmart AI governance requirements — verifying the model's logic is mathematically stable and free of critical biases before deployment.
+
+---
+
+## 🖥️ Live Prediction App
+
+**CapstoneML v.3** is deployed on BrainToy MLOS as a no-code interactive interface. Non-technical users — site managers, procurement officers — can input shipment parameters and receive an instant Late/On-Time risk label.
+
+👉 [Try the live predictor](https://www.vouchya.com/capstone)
 
 ---
 
@@ -65,38 +82,6 @@ supply-chain-delay-predictor/
 
 ---
 
-## 🖥️ Live Demo
-
-Open `predictor-app.html` in your browser, enter your MindsDB API key and access token, fill in order details, and click **Predict**.
-
-Alternatively, access the hosted JotForm agent demo:
-👉 [https://agent.jotform.com/01a068014d98700080c8c7a4ca4e868f860c](https://agent.jotform.com/01a068014d98700080c8c7a4ca4e868f860c)
-
----
-
-## ⚙️ Setup
-
-### 1. Install dependencies
-```bash
-pip install pandas scikit-learn matplotlib seaborn jupyter
-```
-
-### 2. Get the dataset
-Download from Kaggle and place in `data/`:
-```
-data/DataCoSupplyChainDataset.csv
-```
-
-### 3. Run the notebook
-```bash
-jupyter notebook notebook/supply_chain_eda.ipynb
-```
-
-### 4. MindsDB API
-To use the live predictor app, create a free account at [MindsDB Cloud](https://cloud.mindsdb.com), train your model, and copy your API key + access token into the app.
-
----
-
 ## 📊 SDG Alignment
 
 | Goal | Relevance |
@@ -107,13 +92,27 @@ To use the live predictor app, create a free account at [MindsDB Cloud](https://
 
 ---
 
+## 📂 Project Structure
+
+```
+supply-chain-delay-predictor/
+├── README.md                    # Project overview (this file)
+├── predictor-app.html           # Interactive web predictor UI
+├── notebook/
+│   └── supply_chain_eda.ipynb   # EDA + model training notebook
+└── data/
+    └── .gitkeep                 # Place DataCoSupplyChainDataset.csv here
+```
+
+---
+
 ## 👤 Author
 
 **Francis Amojelar** — [@ciscel](https://github.com/ciscel)  
-Calgary, AB · [Vouchya](https://www.vouchya.com)
+BuiltSmart AI Cohort · Calgary, AB · [vouchya.com](https://www.vouchya.com)
 
 ---
 
 ## 📄 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License
