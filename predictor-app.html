@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply Chain Delay Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{--color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fff;--color-surface-offset:#f0ede8;--color-divider:#dcd9d5;--color-border:#d4d1ca;--color-text:#28251d;--color-text-muted:#7a7974;--color-text-faint:#bab9b4;--color-primary:#01696f;--color-primary-hover:#0c4e54;--color-primary-highlight:#cedcd8;--color-success:#437a22;--color-success-highlight:#d4dfcc;--color-error:#a12c7b;--color-error-highlight:#e0ced7;--color-warning:#964219;--radius-sm:0.375rem;--radius-md:0.5rem;--radius-lg:0.75rem;--radius-xl:1rem;--radius-full:9999px;--shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);--shadow-md:0 4px 12px oklch(0.2 0.01 80/0.08);--shadow-lg:0 12px 32px oklch(0.2 0.01 80/0.12);--font-display:'Instrument Serif',Georgia,serif;--font-body:'Inter','Helvetica Neue',sans-serif;--text-xs:clamp(0.75rem,0.7rem + 0.25vw,0.875rem);--text-sm:clamp(0.875rem,0.8rem + 0.35vw,1rem);--text-base:clamp(1rem,0.95rem + 0.25vw,1.125rem);--text-lg:clamp(1.125rem,1rem + 0.75vw,1.5rem);--text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);--text-2xl:clamp(2rem,1.2rem + 2.5vw,3.5rem);--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--transition:180ms cubic-bezier(0.16,1,0.3,1)}
+[data-theme="dark"]{--color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;--color-surface-offset:#1d1c1a;--color-divider:#262523;--color-border:#393836;--color-text:#cdccca;--color-text-muted:#797876;--color-text-faint:#5a5957;--color-primary:#4f98a3;--color-primary-hover:#227f8b;--color-primary-highlight:#313b3b;--color-success:#6daa45;--color-success-highlight:#3a4435;--color-error:#d163a7;--color-error-highlight:#4c3d46;--color-warning:#bb653b;--shadow-sm:0 1px 2px oklch(0 0 0/0.2);--shadow-md:0 4px 12px oklch(0 0 0/0.3);--shadow-lg:0 12px 32px oklch(0 0 0/0.4)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;scroll-padding-top:5rem}
+body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);transition:background var(--transition),color var(--transition)}
+img,svg{display:block;max-width:100%}
+input,select,button{font:inherit;color:inherit}
+h1,h2,h3{text-wrap:balance;line-height:1.15}
+p{text-wrap:pretty;max-width:72ch}
+a,button,[role="button"]{transition:color var(--transition),background var(--transition),border-color var(--transition),box-shadow var(--transition)}
+button{cursor:pointer;background:none;border:none}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-3) var(--space-6);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);backdrop-filter:blur(8px)}
+.logo{display:flex;align-items:center;gap:var(--space-2);text-decoration:none;color:var(--color-text)}
+.logo svg{color:var(--color-primary)}
+.logo-text{font-family:var(--font-display);font-size:var(--text-lg);font-style:italic}
+.header-right{display:flex;align-items:center;gap:var(--space-3)}
+.theme-btn{width:36px;height:36px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);border:1px solid var(--color-border)}
+.theme-btn:hover{color:var(--color-text);background:var(--color-surface-offset)}
+.badge{font-size:var(--text-xs);font-weight:600;padding:0.2em 0.7em;border-radius:var(--radius-full);background:var(--color-primary-highlight);color:var(--color-primary);letter-spacing:0.04em;text-transform:uppercase}
+
+/* HERO */
+.hero{padding:var(--space-12) var(--space-6) var(--space-8);max-width:900px;margin:0 auto;text-align:center}
+.hero-title{font-family:var(--font-display);font-size:var(--text-2xl);font-style:italic;line-height:1.1;margin-bottom:var(--space-3)}
+.hero-sub{font-size:var(--text-base);color:var(--color-text-muted);max-width:56ch;margin:0 auto var(--space-8)}
+.sdg-pills{display:flex;flex-wrap:wrap;gap:var(--space-2);justify-content:center;margin-bottom:var(--space-8)}
+.sdg-pill{font-size:var(--text-xs);font-weight:600;padding:0.3em 0.9em;border-radius:var(--radius-full);border:1px solid var(--color-border);color:var(--color-text-muted);letter-spacing:0.03em}
+
+/* MAIN LAYOUT */
+.app-wrap{max-width:1100px;margin:0 auto;padding:0 var(--space-6) var(--space-16);display:grid;grid-template-columns:1fr 380px;gap:var(--space-8);align-items:start}
+@media(max-width:820px){.app-wrap{grid-template-columns:1fr}}
+
+/* FORM CARD */
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6);box-shadow:var(--shadow-sm)}
+.card-title{font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-5);display:flex;align-items:center;gap:var(--space-2)}
+.card-title svg{color:var(--color-primary);flex-shrink:0}
+
+/* API SECTION */
+.api-section{background:var(--color-surface-offset);border-radius:var(--radius-lg);padding:var(--space-4);margin-bottom:var(--space-6);border:1px solid var(--color-border)}
+.api-section h3{font-size:var(--text-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-text-muted);margin-bottom:var(--space-3)}
+
+/* FORM GRID */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:var(--space-1)}
+.form-group.full{grid-column:1/-1}
+label{font-size:var(--text-sm);font-weight:500;color:var(--color-text-muted)}
+input,select{width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-2);font-size:var(--text-sm);color:var(--color-text);transition:border-color var(--transition),box-shadow var(--transition)}
+input:focus,select:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px oklch(from var(--color-primary) l c h/0.12);outline:none}
+select{cursor:pointer}
+
+/* SECTION DIVIDER */
+.form-section-label{grid-column:1/-1;font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-faint);padding-top:var(--space-2);border-top:1px solid var(--color-divider)}
+
+/* PREDICT BUTTON */
+.predict-btn{width:100%;margin-top:var(--space-5);padding:var(--space-3) var(--space-6);background:var(--color-primary);color:#fff;border-radius:var(--radius-lg);font-size:var(--text-sm);font-weight:600;letter-spacing:0.02em;border:none;display:flex;align-items:center;justify-content:center;gap:var(--space-2)}
+.predict-btn:hover{background:var(--color-primary-hover)}
+.predict-btn:active{transform:scale(0.99)}
+.predict-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+/* RESULTS PANEL */
+.results-panel{display:flex;flex-direction:column;gap:var(--space-5)}
+
+/* RESULT CARD */
+.result-card{border-radius:var(--radius-xl);padding:var(--space-6);border:1px solid var(--color-border);background:var(--color-surface)}
+.result-label{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:var(--space-3)}
+.result-verdict{font-family:var(--font-display);font-size:var(--text-xl);font-style:italic;line-height:1.1;margin-bottom:var(--space-2)}
+.result-verdict.late{color:var(--color-error)}
+.result-verdict.ontime{color:var(--color-success)}
+.result-verdict.empty{color:var(--color-text-faint)}
+.result-detail{font-size:var(--text-sm);color:var(--color-text-muted)}
+
+/* CONFIDENCE BAR */
+.conf-bar-wrap{margin-top:var(--space-4)}
+.conf-bar-labels{display:flex;justify-content:space-between;font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-1)}
+.conf-bar-bg{height:8px;border-radius:var(--radius-full);background:var(--color-surface-offset);overflow:hidden}
+.conf-bar-fill{height:100%;border-radius:var(--radius-full);background:var(--color-primary);transition:width 0.6s cubic-bezier(0.16,1,0.3,1)}
+.conf-bar-fill.high-risk{background:var(--color-error)}
+
+/* INFLUENTIAL / NONINFLUENTIAL */
+.influence-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-5)}
+.influence-title{font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-3);display:flex;align-items:center;gap:var(--space-2)}
+.influence-list{list-style:none;display:flex;flex-direction:column;gap:var(--space-2)}
+.influence-item{display:flex;align-items:center;justify-content:space-between;font-size:var(--text-sm);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);background:var(--color-surface-offset)}
+.influence-item.pos{border-left:3px solid var(--color-primary)}
+.influence-item.neg{border-left:3px solid var(--color-error)}
+.influence-name{color:var(--color-text);font-weight:500}
+.influence-val{color:var(--color-text-muted);font-size:var(--text-xs)}
+
+/* LOG CARD */
+.log-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-5)}
+.log-title{font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-3);color:var(--color-text-muted)}
+.log-body{font-size:var(--text-xs);color:var(--color-text-faint);font-family:monospace;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;background:var(--color-surface-offset);border-radius:var(--radius-md);padding:var(--space-3)}
+
+/* SPINNER */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:18px;height:18px;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;animation:spin 0.7s linear infinite}
+
+/* ABOUT CARD */
+.about-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted)}
+.about-card h3{font-size:var(--text-base);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3)}
+.about-card p{margin-bottom:var(--space-3)}
+.about-card a{color:var(--color-primary);text-decoration:none}
+.about-card a:hover{text-decoration:underline}
+.tag-list{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2)}
+.tag{font-size:var(--text-xs);padding:0.2em 0.7em;border-radius:var(--radius-full);background:var(--color-surface-offset);border:1px solid var(--color-border);color:var(--color-text-muted)}
+
+@media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="#">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-label="Logo">
+      <rect x="3" y="7" width="22" height="14" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M3 11h22" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="9" cy="21" r="2.5" fill="currentColor"/>
+      <circle cx="19" cy="21" r="2.5" fill="currentColor"/>
+      <path d="M14 7V4M10 4h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-text">DeliveryRisk</span>
+  </a>
+  <div class="header-right">
+    <span class="badge">ML Predictor</span>
+    <button class="theme-btn" data-theme-toggle aria-label="Switch theme">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1 class="hero-title">Will this order arrive on time?</h1>
+  <p class="hero-sub">Enter order details below and let the machine learning model assess the late delivery risk before you ship.</p>
+  <div class="sdg-pills">
+    <span class="sdg-pill">SDG 9 — Industry &amp; Innovation</span>
+    <span class="sdg-pill">SDG 12 — Responsible Consumption</span>
+    <span class="sdg-pill">SDG 8 — Economic Growth</span>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main class="app-wrap">
+
+  <!-- LEFT: FORM -->
+  <div>
+    <div class="card">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Order Details
+      </h2>
+
+      <!-- API KEYS -->
+      <div class="api-section">
+        <h3>🔑 MindsDB API Credentials</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="apikey">API Key</label>
+            <input type="password" id="apikey" placeholder="mindsdb-api-key" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="accesstoken">Access Token</label>
+            <input type="password" id="accesstoken" placeholder="access-token" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <form id="predictForm">
+        <div class="form-grid">
+
+          <div class="form-section-label">Order &amp; Customer</div>
+
+          <div class="form-group">
+            <label for="f_type">Payment Type</label>
+            <select id="f_type">
+              <option value="">Select…</option>
+              <option>DEBIT</option><option>TRANSFER</option><option>CASH</option><option>PAYMENT</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="f_customer_segment">Customer Segment</label>
+            <select id="f_customer_segment">
+              <option value="">Select…</option>
+              <option>Consumer</option><option>Corporate</option><option>Home Office</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="f_days_scheduled">Days Scheduled for Shipment</label>
+            <input type="number" id="f_days_scheduled" placeholder="e.g. 4" min="0" max="365">
+          </div>
+
+          <div class="form-group">
+            <label for="f_shipping_mode">Shipping Mode</label>
+            <select id="f_shipping_mode">
+              <option value="">Select…</option>
+              <option>Standard Class</option><option>Second Class</option><option>First Class</option><option>Same Day</option>
+            </select>
+          </div>
+
+          <div class="form-section-label">Product &amp; Order Financials</div>
+
+          <div class="form-group">
+            <label for="f_category">Category Name</label>
+            <input type="text" id="f_category" placeholder="e.g. Cleats">
+          </div>
+
+          <div class="form-group">
+            <label for="f_department">Department Name</label>
+            <input type="text" id="f_department" placeholder="e.g. Fan Shop">
+          </div>
+
+          <div class="form-group">
+            <label for="f_product_name">Product Name</label>
+            <input type="text" id="f_product_name" placeholder="e.g. Nike Shoe">
+          </div>
+
+          <div class="form-group">
+            <label for="f_product_price">Product Price ($)</label>
+            <input type="number" id="f_product_price" placeholder="e.g. 89.99" step="0.01">
+          </div>
+
+          <div class="form-group">
+            <label for="f_discount">Item Discount ($)</label>
+            <input type="number" id="f_discount" placeholder="e.g. 5.00" step="0.01">
+          </div>
+
+          <div class="form-group">
+            <label for="f_discount_rate">Discount Rate (0–1)</label>
+            <input type="number" id="f_discount_rate" placeholder="e.g. 0.08" step="0.01" min="0" max="1">
+          </div>
+
+          <div class="form-group">
+            <label for="f_quantity">Order Quantity</label>
+            <input type="number" id="f_quantity" placeholder="e.g. 3" min="1">
+          </div>
+
+          <div class="form-group">
+            <label for="f_sales">Sales ($)</label>
+            <input type="number" id="f_sales" placeholder="e.g. 269.97" step="0.01">
+          </div>
+
+          <div class="form-group">
+            <label for="f_order_total">Order Item Total ($)</label>
+            <input type="number" id="f_order_total" placeholder="e.g. 254.97" step="0.01">
+          </div>
+
+          <div class="form-group">
+            <label for="f_benefit">Benefit per Order ($)</label>
+            <input type="number" id="f_benefit" placeholder="e.g. 12.50" step="0.01">
+          </div>
+
+          <div class="form-group">
+            <label for="f_profit">Profit per Order ($)</label>
+            <input type="number" id="f_profit" placeholder="e.g. 18.00" step="0.01">
+          </div>
+
+          <div class="form-group">
+            <label for="f_profit_ratio">Item Profit Ratio (0–1)</label>
+            <input type="number" id="f_profit_ratio" placeholder="e.g. 0.15" step="0.01" min="-1" max="1">
+          </div>
+
+          <div class="form-group">
+            <label for="f_sales_per_customer">Sales per Customer ($)</label>
+            <input type="number" id="f_sales_per_customer" placeholder="e.g. 350.00" step="0.01">
+          </div>
+
+          <div class="form-group">
+            <label for="f_product_status">Product Status</label>
+            <select id="f_product_status">
+              <option value="">Select…</option>
+              <option value="0">0 — Active</option>
+              <option value="1">1 — Inactive</option>
+            </select>
+          </div>
+
+          <div class="form-section-label">Geographic &amp; Market</div>
+
+          <div class="form-group">
+            <label for="f_market">Market</label>
+            <select id="f_market">
+              <option value="">Select…</option>
+              <option>Africa</option><option>Europe</option><option>LATAM</option><option>Pacific Asia</option><option>USCA</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="f_region">Order Region</label>
+            <input type="text" id="f_region" placeholder="e.g. Western Europe">
+          </div>
+
+          <div class="form-group">
+            <label for="f_country">Order Country</label>
+            <input type="text" id="f_country" placeholder="e.g. France">
+          </div>
+
+          <div class="form-group">
+            <label for="f_state">Order State</label>
+            <input type="text" id="f_state" placeholder="e.g. Île-de-France">
+          </div>
+
+          <div class="form-group">
+            <label for="f_city">Order City</label>
+            <input type="text" id="f_city" placeholder="e.g. Paris">
+          </div>
+
+          <div class="form-group">
+            <label for="f_lat">Latitude</label>
+            <input type="number" id="f_lat" placeholder="e.g. 48.8566" step="0.0001">
+          </div>
+
+          <div class="form-group">
+            <label for="f_lng">Longitude</label>
+            <input type="number" id="f_lng" placeholder="e.g. 2.3522" step="0.0001">
+          </div>
+
+          <div class="form-section-label">Date &amp; Time</div>
+
+          <div class="form-group">
+            <label for="f_month">Order Month (1–12)</label>
+            <input type="number" id="f_month" placeholder="e.g. 7" min="1" max="12">
+          </div>
+
+          <div class="form-group">
+            <label for="f_dow">Order Day of Week (0=Mon, 6=Sun)</label>
+            <input type="number" id="f_dow" placeholder="e.g. 2" min="0" max="6">
+          </div>
+
+        </div>
+
+        <button type="submit" class="predict-btn" id="predictBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Predict Delivery Risk
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- RIGHT: RESULTS -->
+  <div class="results-panel">
+
+    <!-- VERDICT CARD -->
+    <div class="result-card" id="verdictCard">
+      <div class="result-label">Model Output</div>
+      <div class="result-verdict empty" id="verdictText">Awaiting prediction…</div>
+      <div class="result-detail" id="verdictDetail">Fill in the form and click Predict.</div>
+      <div class="conf-bar-wrap" id="confWrap" style="display:none">
+        <div class="conf-bar-labels">
+          <span>Confidence</span>
+          <span id="confPct">—</span>
+        </div>
+        <div class="conf-bar-bg"><div class="conf-bar-fill" id="confBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- INFLUENTIAL -->
+    <div class="influence-card" id="influenceCard">
+      <div class="influence-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Influential Inputs
+      </div>
+      <ul class="influence-list" id="influenceList">
+        <li class="influence-item"><span class="influence-name" style="color:var(--color-text-faint)">No data yet</span></li>
+      </ul>
+    </div>
+
+    <!-- NON-INFLUENTIAL -->
+    <div class="influence-card" id="nonInfluenceCard">
+      <div class="influence-title" style="color:var(--color-text-muted)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Noninfluential Inputs
+      </div>
+      <ul class="influence-list" id="nonInfluenceList">
+        <li class="influence-item"><span class="influence-name" style="color:var(--color-text-faint)">No data yet</span></li>
+      </ul>
+    </div>
+
+    <!-- RAW LOG -->
+    <div class="log-card">
+      <div class="log-title">Model Response Log</div>
+      <pre class="log-body" id="logBody">No response yet.</pre>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="about-card">
+      <h3>About This Project</h3>
+      <p>This predictor uses a supervised ML model trained on the <a href="https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis" target="_blank" rel="noopener">DataCo Smart Supply Chain</a> dataset (~180,000 orders) hosted on MindsDB.</p>
+      <p>Model predictions are probabilistic — a confidence score reflects how certain the model is about the late-delivery classification.</p>
+      <p>Built by <strong>Francis Amojelar</strong> · <a href="https://github.com/ciscel/supply-chain-delay-predictor" target="_blank" rel="noopener">View on GitHub</a></p>
+      <div class="tag-list">
+        <span class="tag">Random Forest</span>
+        <span class="tag">MindsDB</span>
+        <span class="tag">Supply Chain</span>
+        <span class="tag">SDG 9</span>
+        <span class="tag">DataCo Dataset</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// Theme toggle
+(function(){
+  var t=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
+  var d=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  r.setAttribute('data-theme',d);
+  t&&t.addEventListener('click',function(){
+    d=d==='dark'?'light':'dark';
+    r.setAttribute('data-theme',d);
+    t.innerHTML=d==='dark'
+      ?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      :'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  });
+})();
+
+// Predict
+document.getElementById('predictForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  var btn=document.getElementById('predictBtn');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> Predicting…';
+
+  var apikey=document.getElementById('apikey').value.trim();
+  var accesstoken=document.getElementById('accesstoken').value.trim();
+
+  var payload={
+    apikey:apikey,
+    accesstoken:accesstoken,
+    Type:document.getElementById('f_type').value,
+    Days_for_shipment_scheduled_:document.getElementById('f_days_scheduled').value,
+    Benefit_per_order:document.getElementById('f_benefit').value,
+    Sales_per_customer:document.getElementById('f_sales_per_customer').value,
+    Category_Name:document.getElementById('f_category').value,
+    Customer_Segment:document.getElementById('f_customer_segment').value,
+    Department_Name:document.getElementById('f_department').value,
+    Latitude:document.getElementById('f_lat').value,
+    Longitude:document.getElementById('f_lng').value,
+    Market:document.getElementById('f_market').value,
+    Order_City:document.getElementById('f_city').value,
+    Order_Country:document.getElementById('f_country').value,
+    Order_Item_Discount:document.getElementById('f_discount').value,
+    Order_Item_Discount_Rate:document.getElementById('f_discount_rate').value,
+    Order_Item_Product_Price:document.getElementById('f_product_price').value,
+    Order_Item_Profit_Ratio:document.getElementById('f_profit_ratio').value,
+    Order_Item_Quantity:document.getElementById('f_quantity').value,
+    Sales:document.getElementById('f_sales').value,
+    Order_Item_Total:document.getElementById('f_order_total').value,
+    Order_Profit_Per_Order:document.getElementById('f_profit').value,
+    Order_Region:document.getElementById('f_region').value,
+    Order_State:document.getElementById('f_state').value,
+    Product_Name:document.getElementById('f_product_name').value,
+    Product_Price:document.getElementById('f_product_price').value,
+    Product_Status:document.getElementById('f_product_status').value,
+    Shipping_Mode:document.getElementById('f_shipping_mode').value,
+    Order_Month:document.getElementById('f_month').value,
+    Order_DayOfWeek:document.getElementById('f_dow').value
+  };
+
+  var verdictEl=document.getElementById('verdictText');
+  var detailEl=document.getElementById('verdictDetail');
+  var logEl=document.getElementById('logBody');
+  var confWrap=document.getElementById('confWrap');
+  var confBar=document.getElementById('confBar');
+  var confPct=document.getElementById('confPct');
+
+  logEl.textContent=JSON.stringify(payload,null,2);
+
+  try{
+    // MindsDB prediction endpoint (update with your model name)
+    var response=await fetch('https://cloud.mindsdb.com/api/projects/mindsdb/models/late_delivery_risk_predictor/predict',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+accesstoken},
+      body:JSON.stringify({data:[payload]})
+    });
+    var json=await response.json();
+    logEl.textContent=JSON.stringify(json,null,2);
+
+    var result=Array.isArray(json)&&json[0]?json[0]:json;
+    var risk=result.Late_delivery_risk!==undefined?result.Late_delivery_risk:result.prediction;
+    var conf=result['Late_delivery_risk_confidence']||result.confidence;
+
+    if(risk===1||risk==='1'||risk===true){
+      verdictEl.textContent='⚠️ High Late Delivery Risk';
+      verdictEl.className='result-verdict late';
+      detailEl.textContent='This order is predicted to arrive LATE. Consider expediting or alerting the customer.';
+      confBar.classList.add('high-risk');
+    } else if(risk===0||risk==='0'||risk===false) {
+      verdictEl.textContent='✅ On-Time Delivery Expected';
+      verdictEl.className='result-verdict ontime';
+      detailEl.textContent='This order is predicted to arrive on time based on current inputs.';
+      confBar.classList.remove('high-risk');
+    } else {
+      verdictEl.textContent='⚙️ Response received';
+      verdictEl.className='result-verdict';
+      detailEl.textContent='Check the log for raw model output.';
+    }
+
+    if(conf!==undefined){
+      var pct=Math.round(Number(conf)*100);
+      confWrap.style.display='block';
+      confBar.style.width=pct+'%';
+      confPct.textContent=pct+'%';
+    }
+
+    // Influential inputs
+    var infKeys=result.important_missing_information||result.influences||[];
+    renderInfluence(infKeys);
+
+  } catch(err){
+    verdictEl.textContent='❌ Request Failed';
+    verdictEl.className='result-verdict late';
+    detailEl.textContent=err.message||'Check your API credentials and network connection.';
+    logEl.textContent+=('\n\nError: '+err.message);
+  }
+
+  btn.disabled=false;
+  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Predict Delivery Risk';
+});
+
+function renderInfluence(items){
+  var list=document.getElementById('influenceList');
+  var nonList=document.getElementById('nonInfluenceList');
+  if(!items||items.length===0){return;}
+  list.innerHTML='';
+  nonList.innerHTML='';
+  items.forEach(function(item,i){
+    var li=document.createElement('li');
+    li.className='influence-item '+(i<3?'pos':'neg');
+    li.innerHTML='<span class="influence-name">'+(item.name||item)+'</span><span class="influence-val">'+(item.value||'')+'</span>';
+    (i<3?list:nonList).appendChild(li);
+  });
+}
+</script>
+
+</body>
+</html>
